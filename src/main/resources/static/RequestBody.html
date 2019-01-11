@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<form id="test_form">
+    账户：<input type="text" name="username" value="user"/><br>
+    密码：<input type="password" name="password" value="123"><br>
+
+    <input type="button" value="序列化为(Key=Value)格式Url" onclick="testJquerySerializeUrl()" id="serializeUrl"/>&nbsp;&nbsp;
+    <input type="button" value="序列化为json" onclick="testJquerySerializeArray()" id="serializeJson"/>&nbsp;&nbsp;
+    <input type="button" value="手动拼接为json" onclick="testAutoSetJsonData()" id="autoSetJson"/>
+</form>
+
+</body>
+<script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+
+<script>
+
+    function testJquerySerializeUrl() {
+
+        alert(JSON.stringify($("#test_form").serialize()));
+        console.log($("#test_form").serialize());
+
+        //重新组装表单序列化Url为Json串
+        var jsonData = {}
+        var serializeStr = $("#test_form").serialize();
+        var array = serializeStr.split("&");
+
+        $(array).each(function (i) {
+            jsonData[array[i].split("=")[0]] = array[i].split("=")[1];
+        })
+
+        console.log(jsonData);
+
+        $.ajax({
+            url: "/SerializeUrl",
+            type: "post",
+            data: JSON.stringify(jsonData),
+            contentType: "application/json"
+        })
+    }
+
+    function testJquerySerializeArray() {
+
+        alert($("#test_form").serializeArray());
+        console.log($("#test_form").serializeArray());
+
+        var jsonData = {};
+        var serializeArray = $("#test_form").serializeArray();
+        // 先转换成{"id": ["12","14"], "name": ["aaa","bbb"], "pwd":["pwd1","pwd2"]}这种形式
+        $(serializeArray).each(function () {
+            if (jsonData[this.name]) {
+                if ($.isArray(jsonData[this.name])) {
+                    jsonData[this.name].push(this.value);
+                } else {
+                    jsonData[this.name] = [jsonData[this.name], this.value];
+                }
+            } else {
+                jsonData[this.name] = this.value;
+            }
+        });
+        console.log(jsonData);
+        $.ajax({
+            url: "/SerializeArray",
+            type: "post",
+            data: JSON.stringify(jsonData),
+            contentType: "application/json"
+        })
+    }
+
+    function testAutoSetJsonData() {
+        $.ajax({
+            url:"/autoSetJsonData",
+            type:"post",
+            data:JSON.stringify({
+                username:"user",
+                password:"123"
+            }),
+            contentType: "application/json"
+        })
+    }
+
+
+</script>
+
+</html>
